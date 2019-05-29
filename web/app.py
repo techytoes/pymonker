@@ -43,3 +43,136 @@ def getUserMessage(username):
     return users.find({
         "Username": username
     })[0]["Messages"]
+
+"""
+RESOURCES
+"""
+
+
+class Hello(Resource):
+    def get(self):
+        return "Hello World"
+
+
+class Register(Resource):
+    def post(self):
+        # Get the posted data from request
+        data = request.get_json()
+
+        # get data
+        username = data["username"]
+        password = data["password"]
+
+        # check if user exists
+        if userExists(username):
+            retJson = {
+                "status": 301,
+                "msg": "Invalid Username",
+            }
+            return jsonify(retJson)
+
+        # Encrypting the password
+        hashed_pw = bcyrpt.hashpw(password.encode('utf8'), bcyrpt.gensalt())
+
+        # Insert record
+        users.insert({
+            "Username": username,
+            "Password": password,
+            "Messages": []
+        })
+
+        # Return successful result
+        retJson = {
+            "status": 200,
+            "msg": "Registration Successful",
+        }
+        return jsonify(retJson)
+
+    
+class Retrieve(Resource):
+    def post(self):
+        # Get the posted data from request
+        data = request.get_json()
+
+        # get data
+        username = data["username"]
+        password = data["password"]
+
+        # check if user exists
+        if userExists(username):
+            retJson = {
+                "status": 301,
+                "msg": "Invalid Username",
+            }
+            return jsonify(retJson)
+
+        # Check if password is correct
+        correct_pw = verifyUser(username, password)
+        if not correct_pw:
+            retJson = {
+                "status": 302,
+                "msg": "Invalid Password",
+            }
+            return jsonify(retJson)
+        
+        # get the messages
+        messages = getUserMessage(username)
+
+        # Build successful response
+        retJson = {
+            "status": 200,
+            "obj": messages,
+        }
+        return jsonify(retJson)
+
+
+def Save(Resource):
+    def post(self):
+        # Get the posted data from request
+        data = request.get_json()
+
+        # get the data
+        username = data["username"]
+        password = data["password"]
+        message = data["message"]
+
+        # check if user exists
+        if userExists(username):
+            retJson = {
+                "status": 301,
+                "msg": "Invalid Username",
+            }
+            return jsonify(retJson)
+
+        # Check if password is correct
+        correct_pw = verifyUser(username, password)
+        if not correct_pw:
+            retJson = {
+                "status": 302,
+                "msg": "Invalid Password",
+            }
+            return jsonify(retJson)
+
+        # Check if the message is valid
+        if not message:
+            retJson = {
+                "status": 303,
+                "msg": "Please Supply a valid message",
+            }
+            return jsonify(retJson)
+        
+        # get the messages
+        messages = getUserMessage(username)
+
+        # Add current message
+        messages.append(message)
+
+        # Save the User's new message
+        users.update({
+            "Username": username,
+        },{
+            "$set": {
+                "Messages": messages
+            }
+        })
+        return jsonify(retJson)
