@@ -28,7 +28,7 @@ def userExists(username):
 def verifyUser(username, password):
     if not userExists(username):
         return False
-    
+
     user_hashed_pw = users.find({
         "Username": username
     })[0]["Password"]
@@ -43,6 +43,7 @@ def getUserMessage(username):
     return users.find({
         "Username": username
     })[0]["Messages"]
+
 
 """
 RESOURCES
@@ -88,7 +89,7 @@ class Register(Resource):
         }
         return jsonify(retJson)
 
-    
+
 class Retrieve(Resource):
     def post(self):
         # Get the posted data from request
@@ -114,7 +115,7 @@ class Retrieve(Resource):
                 "msg": "Invalid Password",
             }
             return jsonify(retJson)
-        
+
         # get the messages
         messages = getUserMessage(username)
 
@@ -160,7 +161,7 @@ def Save(Resource):
                 "msg": "Please Supply a valid message",
             }
             return jsonify(retJson)
-        
+
         # get the messages
         messages = getUserMessage(username)
 
@@ -170,7 +171,7 @@ def Save(Resource):
         # Save the User's new message
         users.update({
             "Username": username,
-        },{
+        }, {
             "$set": {
                 "Messages": messages
             }
