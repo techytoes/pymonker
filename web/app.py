@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 from pymongo import MongoClient
-import bcyrpt
+import bcrypt
 
 # Initializing Flask app and creating rest API service
 app = Flask(__name__)
@@ -33,7 +33,7 @@ def verifyUser(username, password):
         "Username": username
     })[0]["Password"]
 
-    if bcyrpt.checkpw(password.encode('utf8'), user_hashed_pw):
+    if bcrypt.checkpw(password.encode('utf8'), user_hashed_pw):
         return True
     else:
         return False
@@ -73,7 +73,7 @@ class Register(Resource):
             return jsonify(retJson)
 
         # Encrypting the password
-        hashed_pw = bcyrpt.hashpw(password.encode('utf8'), bcyrpt.gensalt())
+        hashed_pw = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
 
         # Insert record
         users.insert({
@@ -100,7 +100,7 @@ class Retrieve(Resource):
         password = data["password"]
 
         # check if user exists
-        if userExists(username):
+        if not userExists(username):
             retJson = {
                 "status": 301,
                 "msg": "Invalid Username",
@@ -127,7 +127,7 @@ class Retrieve(Resource):
         return jsonify(retJson)
 
 
-def Save(Resource):
+class Save(Resource):
     def post(self):
         # Get the posted data from request
         data = request.get_json()
@@ -138,7 +138,7 @@ def Save(Resource):
         message = data["message"]
 
         # check if user exists
-        if userExists(username):
+        if not userExists(username):
             retJson = {
                 "status": 301,
                 "msg": "Invalid Username",
@@ -170,12 +170,18 @@ def Save(Resource):
 
         # Save the User's new message
         users.update({
-            "Username": username,
+            "Username": username
         }, {
             "$set": {
                 "Messages": messages
             }
         })
+
+        retJson = {
+            "status": 200,
+            "msg": "Message has been saved successfully",
+        }
+
         return jsonify(retJson)
 
 
