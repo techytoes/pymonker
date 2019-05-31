@@ -75,10 +75,10 @@ class Register(Resource):
         # Encrypting the password
         hashed_pw = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
 
-        # Insert record
+        # Insert record in DB
         users.insert({
             "Username": username,
-            "Password": password,
+            "Password": hashed_pw,
             "Messages": []
         })
 
